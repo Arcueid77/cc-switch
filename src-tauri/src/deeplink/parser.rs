@@ -107,12 +107,14 @@ fn parse_provider_deeplink(
             | "gemini"
             | "grokbuild"
             | "opencode"
+            | "copilot-byok"
+            | "copilot-cli"
             | "openclaw"
             | "hermes"
             | "pi"
     ) {
         return Err(AppError::InvalidInput(format!(
-            "Invalid provider app type: '{app}'"
+            "Invalid app type: must be 'claude', 'codex', 'gemini', 'grokbuild', 'opencode', 'copilot-byok', 'copilot-cli', 'openclaw', 'hermes', or 'pi', got '{app}'"
         )));
     }
 
@@ -262,13 +264,15 @@ fn parse_prompt_deeplink(
             | "agy"
             | "grokbuild"
             | "opencode"
+            | "copilot-byok"
+            | "copilot-cli"
             | "openclaw"
             | "hermes"
             | "pi"
             | "mcode"
     ) {
         return Err(AppError::InvalidInput(format!(
-            "Invalid app type: must be 'claude', 'codex', 'gemini', 'agy', 'grokbuild', 'opencode', 'openclaw', 'hermes', 'pi', or 'mcode', got '{app}'"
+            "Invalid app type: must be 'claude', 'codex', 'gemini', 'agy', 'grokbuild', 'opencode', 'copilot-byok', 'copilot-cli', 'openclaw', 'hermes', 'pi', or 'mcode', got '{app}'"
         )));
     }
 
@@ -348,6 +352,8 @@ fn parse_mcp_deeplink(
                 | "grokbuild"
                 | "grok"
                 | "opencode"
+                | "copilot-byok"
+                | "copilot-cli"
                 | "openclaw"
                 | "hermes"
                 | "mcode"
@@ -357,7 +363,7 @@ fn parse_mcp_deeplink(
                 | "omp"
         ) {
             return Err(AppError::InvalidInput(format!(
-                "Invalid app in 'apps': must be 'claude', 'codex', 'gemini', 'agy', 'grokbuild', 'opencode', 'openclaw', 'hermes', 'pi', 'kimi', 'dsh', 'mcode', or 'omp', got '{trimmed}'"
+                "Invalid app in 'apps': must be 'claude', 'codex', 'gemini', 'agy', 'grokbuild', 'opencode', 'copilot-byok', 'copilot-cli', 'openclaw', 'hermes', 'pi', 'kimi', 'dsh', 'mcode', or 'omp', got '{trimmed}'"
             )));
         }
     }

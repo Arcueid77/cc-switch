@@ -14,7 +14,8 @@ use std::time::Instant;
 // 其余模型类型从 `session_manager::model` 引用
 pub use model::SessionMessage;
 use providers::{
-    agy, claude, codex, dsh, gemini, grokbuild, hermes, kimi, mcode, omp, openclaw, opencode, pi,
+    agy, claude, codex, copilot, copilot_cli, dsh, gemini, grokbuild, hermes, kimi, mcode, omp,
+    openclaw, opencode, pi,
 };
 
 #[derive(Debug, Clone, Serialize)]
@@ -58,7 +59,7 @@ pub struct DeleteSessionOutcome {
 }
 
 pub fn scan_sessions() -> Vec<SessionMeta> {
-    let (r1, r2, r3, r4, r5, r6, r7, r8, r9) = std::thread::scope(|s| {
+    let (r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11) = std::thread::scope(|s| {
         let h1 = s.spawn(codex::scan_sessions);
         let h2 = s.spawn(claude::scan_sessions);
         let h3 = s.spawn(opencode::scan_sessions);
@@ -68,6 +69,8 @@ pub fn scan_sessions() -> Vec<SessionMeta> {
         let h7 = s.spawn(grokbuild::scan_sessions);
         let h8 = s.spawn(pi::scan_sessions);
         let h9 = s.spawn(omp::scan_sessions);
+        let h10 = s.spawn(copilot::scan_sessions);
+        let h11 = s.spawn(copilot_cli::scan_sessions);
         (
             h1.join().unwrap_or_default(),
             h2.join().unwrap_or_default(),
@@ -78,6 +81,8 @@ pub fn scan_sessions() -> Vec<SessionMeta> {
             h7.join().unwrap_or_default(),
             h8.join().unwrap_or_default(),
             h9.join().unwrap_or_default(),
+            h10.join().unwrap_or_default(),
+            h11.join().unwrap_or_default(),
         )
     });
 
@@ -95,6 +100,8 @@ pub fn scan_sessions() -> Vec<SessionMeta> {
     sessions.extend(kimi::scan_sessions());
     sessions.extend(dsh::scan_sessions());
     sessions.extend(agy::scan_sessions());
+    sessions.extend(r10);
+    sessions.extend(r11);
 
     sessions.sort_by(|a, b| {
         let a_ts = a.last_active_at.or(a.created_at).unwrap_or(0);
@@ -131,6 +138,8 @@ pub fn load_messages(provider_id: &str, source_path: &str) -> Result<Vec<Session
         "kimi" => kimi::load_messages(path),
         "omp" => omp::load_messages(path),
         "dsh" => dsh::load_messages(path),
+        "copilot-byok" => copilot::load_messages(path),
+        "copilot-cli" => copilot_cli::load_messages(path),
         _ => Err(format!("Unsupported provider: {provider_id}")),
     }
 }
@@ -237,6 +246,10 @@ fn delete_session_with_roots(
         "pi" => pi::delete_session(&validated_root, &validated_source, session_id),
         "omp" => omp::delete_session(&validated_root, &validated_source, session_id),
         "kimi" => kimi::delete_session(&validated_root, &validated_source, session_id),
+        "copilot-byok" => copilot::delete_session(&validated_root, &validated_source, session_id),
+        "copilot-cli" => {
+            copilot_cli::delete_session(&validated_root, &validated_source, session_id)
+        }
         _ => Err(format!("Unsupported provider: {provider_id}")),
     }
 }
@@ -255,6 +268,8 @@ fn provider_roots(provider_id: &str) -> Result<Vec<PathBuf>, String> {
         "dsh" => dsh::session_roots(),
         "agy" => agy::session_roots(),
         "omp" => omp::session_roots(),
+        "copilot-byok" => copilot::session_roots(),
+        "copilot-cli" => copilot_cli::session_roots(),
         _ => return Err(format!("Unsupported provider: {provider_id}")),
     };
 

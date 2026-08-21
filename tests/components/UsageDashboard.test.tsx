@@ -384,6 +384,8 @@ describe("UsageDashboard", () => {
         gemini: false,
         grokbuild: false,
         opencode: false,
+        "copilot-byok": false,
+        "copilot-cli": false,
         openclaw: true,
         hermes: true,
         pi: false,
@@ -466,6 +468,29 @@ describe("UsageDashboard", () => {
       ),
     );
     expect(scopeTrigger()).toHaveTextContent("DeepSeek / deepseek-chat");
+  });
+
+  it("applies the provider filter supplied by a provider card", async () => {
+    renderDashboard({
+      defaultFilter: {
+        appType: "copilot-byok",
+        providerName: "MiniMax",
+        revision: 1,
+      },
+    });
+
+    await waitFor(() =>
+      expect(useProviderStatsMock).toHaveBeenCalledWith(
+        expect.anything(),
+        { appType: "copilot-byok" },
+        expect.anything(),
+      ),
+    );
+    expect(useModelStatsMock).toHaveBeenCalledWith(
+      expect.anything(),
+      { appType: "copilot-byok", providerName: "MiniMax" },
+      expect.anything(),
+    );
   });
 
   it("persists refresh interval changes", async () => {

@@ -14,6 +14,8 @@ export interface DeepLinkImportRequest {
     | "agy"
     | "grokbuild"
     | "opencode"
+    | "copilot-byok"
+    | "copilot-cli"
     | "openclaw"
     | "hermes"
     | "pi";

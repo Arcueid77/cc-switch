@@ -874,6 +874,8 @@ command = "echo"
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1025,6 +1027,8 @@ fn set_mcp_enabled_for_codex_writes_live_config() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1097,6 +1101,8 @@ fn enabling_codex_mcp_skips_when_codex_dir_missing() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1149,6 +1155,8 @@ fn upsert_mcp_server_disabling_app_removes_from_claude_live_config() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1190,6 +1198,8 @@ fn upsert_mcp_server_disabling_app_removes_from_claude_live_config() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1377,6 +1387,8 @@ fn enabling_gemini_mcp_skips_when_gemini_dir_missing() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1439,6 +1451,8 @@ fn enabling_claude_mcp_skips_when_claude_config_absent() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1501,6 +1515,8 @@ fn explicit_default_claude_dir_keeps_default_split_mcp_path() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1564,6 +1580,8 @@ fn custom_claude_dir_writes_mcp_inside_config_dir() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1650,6 +1668,8 @@ fn custom_claude_dir_sync_does_not_copy_default_profile() {
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1796,6 +1816,8 @@ fn sync_all_enabled_removes_known_disabled_but_preserves_unknown_live_entries() 
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1825,6 +1847,8 @@ fn sync_all_enabled_removes_known_disabled_but_preserves_unknown_live_entries() 
                 gemini: false,
                 grokbuild: false,
                 opencode: false,
+                copilot_byok: false,
+                copilot_cli: false,
                 hermes: false,
                 mcode: false,
                 kimi: false,
@@ -1873,6 +1897,8 @@ fn resync_targets_default_to_managed_apps_and_reject_unsupported() {
             "gemini",
             "grokbuild",
             "opencode",
+            "copilot-byok",
+            "copilot-cli",
             "hermes",
             "pi",
             "mcode",
@@ -1892,6 +1918,18 @@ fn resync_targets_default_to_managed_apps_and_reject_unsupported() {
         McpService::resync_targets(Some(&["pi".to_string()])).unwrap(),
         vec![AppType::Pi]
     );
+
+    let copilot_targets = McpService::resync_targets(Some(&[
+        "copilot-cli".to_string(),
+        "copilot-byok".to_string(),
+        "copilot-cli".to_string(),
+    ]))
+    .unwrap();
+    assert_eq!(
+        copilot_targets,
+        vec![AppType::CopilotCli, AppType::CopilotByok]
+    );
+
     assert!(McpService::resync_targets(Some(&["openclaw".to_string()])).is_err());
     assert!(McpService::resync_targets(Some(&["not-an-app".to_string()])).is_err());
 }

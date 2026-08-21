@@ -224,7 +224,14 @@ function ScopeModelItems({
   );
 }
 
+export interface UsageDefaultFilter {
+  appType: AppTypeFilter;
+  providerName?: string;
+  revision: number;
+}
+
 interface UsageDashboardProps {
+  defaultFilter?: UsageDefaultFilter;
   refreshIntervalMs?: number;
   onRefreshIntervalChange?: (next: number) => Promise<boolean> | boolean | void;
   sessionAutoSyncEnabled?: boolean;
@@ -254,6 +261,7 @@ export function UsageDashboard({
   settingsReady = true,
   onSessionAutoSyncEnabledChange,
   initialAppType = "all",
+  defaultFilter,
   onOpenRoutingSettings,
   usageDisplay,
   onUsageDisplayChange,
@@ -337,10 +345,10 @@ export function UsageDashboard({
   }, [savedRefreshIntervalMs]);
 
   useEffect(() => {
-    setAppType(initialAppType);
-    setProviderName(undefined);
+    setAppType(defaultFilter?.appType ?? initialAppType);
+    setProviderName(defaultFilter?.providerName);
     setModel(undefined);
-  }, [initialAppType]);
+  }, [initialAppType, defaultFilter]);
 
   // 切应用时清掉下游筛选，避免留下一个在新范围内查无数据的"幽灵"组合；
   // 切供应商同理清掉模型（模型选项随供应商级联）。

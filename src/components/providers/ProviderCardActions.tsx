@@ -67,8 +67,8 @@ const BUTTON_ICON: Record<string, LucideIcon> = {
 interface ProviderCardActionsProps {
   providerName: string;
   presentation: CardPresentation;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   onDuplicate?: () => void;
   onTest?: () => void;
   isTesting?: boolean;
@@ -174,19 +174,21 @@ export function ProviderCardActions({
         </HoverTip>
       )}
 
-      <IconAction
-        tip={t("common.edit")}
-        disabledReason={presentation.editDisabledReason}
-      >
-        <Button
-          variant="quiet"
-          size="icon-compact"
-          aria-label={t("providerCard.action.edit", { name: providerName })}
-          onClick={onEdit}
+      {onEdit && (
+        <IconAction
+          tip={t("common.edit")}
+          disabledReason={presentation.editDisabledReason}
         >
-          <Pencil className="h-4 w-4" strokeWidth={1.5} />
-        </Button>
-      </IconAction>
+          <Button
+            variant="quiet"
+            size="icon-compact"
+            aria-label={t("providerCard.action.edit", { name: providerName })}
+            onClick={onEdit}
+          >
+            <Pencil className="h-4 w-4" strokeWidth={1.5} />
+          </Button>
+        </IconAction>
+      )}
 
       <DropdownMenu>
         <HoverTip content={t("common.more")}>
@@ -223,21 +225,23 @@ export function ProviderCardActions({
               {t("provider.configureUsage")}
             </DropdownMenuItem>
           )}
-          {(onDuplicate || onTest || onConfigureUsage) && (
+          {onDelete && (onDuplicate || onTest || onConfigureUsage) && (
             <DropdownMenuSeparator />
           )}
-          <DropdownMenuItem
-            disabled={Boolean(presentation.deleteDisabledReason)}
-            onSelect={onDelete}
-            className="flex-col items-start gap-0.5 text-danger-text focus:text-danger-text"
-          >
-            {t("common.delete")}
-            {presentation.deleteDisabledReason && (
-              <span className="text-caption text-fg-3">
-                {presentation.deleteDisabledReason}
-              </span>
-            )}
-          </DropdownMenuItem>
+          {onDelete && (
+            <DropdownMenuItem
+              disabled={Boolean(presentation.deleteDisabledReason)}
+              onSelect={onDelete}
+              className="flex-col items-start gap-0.5 text-danger-text focus:text-danger-text"
+            >
+              {t("common.delete")}
+              {presentation.deleteDisabledReason && (
+                <span className="text-caption text-fg-3">
+                  {presentation.deleteDisabledReason}
+                </span>
+              )}
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -131,6 +131,7 @@ function candidate(
 const upgraded = new Set<string>();
 const outdated = new Set<string>();
 const missing = new Set<string>();
+let AppsPage: (typeof import("@/components/apps/AppsPage"))["AppsPage"];
 
 function card(name: string) {
   return within(
@@ -188,8 +189,6 @@ function mountApps(AppsPage: () => JSX.Element) {
 }
 
 async function renderApps() {
-  // 安装 / 升级的状态放在模块级 store 里，跨挂载保留。
-  const { AppsPage } = await import("@/components/apps/AppsPage");
   const view = mountApps(AppsPage);
   // Both header labels stay mounted to reserve their width. Wait for the idle
   // label to be shown, including when a pending dialog hides the page itself.
@@ -228,7 +227,31 @@ afterAll(() => {
 });
 
 describe("AppsPage concurrent CLI upgrades", () => {
-  beforeEach(() => {
+  it("persists independent Copilot visibility using canonical app IDs", async () => {
+    await renderApps();
+    const section = await screen.findByRole("region", {
+      name: "VS Code Copilot / Copilot CLI",
+    });
+    const toggles = within(section).getAllByRole("switch", {
+      name: "appsPage.showInSidebar",
+    });
+    expect(toggles).toHaveLength(2);
+    await userEvent.click(toggles[0]);
+    expect(mocks.autoSaveSettings).toHaveBeenCalledWith({
+      visibleApps: expect.objectContaining({
+        "copilot-byok": false,
+        "copilot-cli": true,
+      }),
+    });
+    await userEvent.click(toggles[1]);
+    expect(mocks.autoSaveSettings).toHaveBeenCalledWith({
+      visibleApps: expect.objectContaining({
+        "copilot-byok": true,
+        "copilot-cli": false,
+      }),
+    });
+  });
+  beforeEach(async () => {
     vi.resetModules();
     upgraded.clear();
     outdated.clear();
@@ -282,6 +305,9 @@ describe("AppsPage concurrent CLI upgrades", () => {
         upgraded.add(tool);
         missing.delete(tool);
       });
+    // Reset the module-level lifecycle store for each test without timing its
+    // cold module transforms as part of the user interaction flow.
+    ({ AppsPage } = await import("@/components/apps/AppsPage"));
   });
 
   it("waits for Codex loading even while the check-updates label is hidden in the DOM", async () => {
@@ -749,7 +775,19 @@ describe("AppsPage concurrent CLI upgrades", () => {
       within(
         screen.getByRole("region", { name: "appsPage.sectionInstalled" }),
       ).getAllByRole("button", { name: "appsPage.dragHandle" }),
-    ).toHaveLength(APP_IDS.length - 2);
+    ).toHaveLength(
+      APP_IDS.filter((app) => app !== "copilot-byok" && app !== "copilot-cli")
+        .length - 2,
+    );
+    expect(rowApps("VS Code Copilot / Copilot CLI")).toEqual([
+      "copilot-byok",
+      "copilot-cli",
+    ]);
+    expect(
+      within(
+        screen.getByRole("region", { name: "VS Code Copilot / Copilot CLI" }),
+      ).queryByRole("button", { name: "appsPage.dragHandle" }),
+    ).toBeNull();
     expect(
       within(
         screen.getByRole("region", { name: "appsPage.sectionNotInstalled" }),

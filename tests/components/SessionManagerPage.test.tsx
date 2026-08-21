@@ -7,9 +7,12 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_VISIBLE_APPS } from "@/config/appConfig";
-import { UNKNOWN_PROJECT_DIR_KEY } from "@/components/sessions/utils";
+import {
+  SESSION_APP_IDS,
+  UNKNOWN_PROJECT_DIR_KEY,
+} from "@/components/sessions/utils";
 import { SessionManagerPage } from "@/components/sessions/SessionManagerPage";
 import { piApi } from "@/lib/api/pi";
 import { sessionsApi } from "@/lib/api/sessions";
@@ -82,6 +85,8 @@ const EXPANDED_KEY = "cc-switch.sessionManager.expandedProjects";
 
 describe("SessionManagerPage", () => {
   beforeEach(() => {
+    // 固定本地正午，避免“半小时前”的会话在凌晨落入昨天；保留真实定时器。
+    vi.setSystemTime(new Date(2026, 0, 15, 12));
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
     platform.mac = false;
@@ -208,6 +213,10 @@ describe("SessionManagerPage", () => {
     ).toBeInTheDocument();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("surfaces a relative Pi sessionDir instead of presenting an empty scan as authoritative", async () => {
     const discovery = vi.spyOn(piApi, "getSessionDiscovery").mockResolvedValue({
       status: "requires_project_context",
@@ -288,8 +297,8 @@ describe("SessionManagerPage", () => {
     await openAppMenu();
     const menu = await screen.findByRole("menu");
     const items = within(menu).getAllByRole("menuitemradio");
-    // 全部应用 + 13 个来源，按会话数从多到少
-    expect(items).toHaveLength(14);
+    // 全部应用 + 所有已知的会话来源，按会话数从多到少
+    expect(items).toHaveLength(SESSION_APP_IDS.length + 1);
     expect(items[0]).toHaveTextContent("全部应用5");
     expect(items[1]).toHaveTextContent("Codex3");
     expect(items[items.length - 1]).toHaveTextContent("无会话");
@@ -324,6 +333,8 @@ describe("SessionManagerPage", () => {
         dsh: false,
         agy: false,
         omp: false,
+        "copilot-byok": false,
+        "copilot-cli": false,
       },
     });
     renderPage("codex");

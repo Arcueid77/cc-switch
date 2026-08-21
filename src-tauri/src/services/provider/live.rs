@@ -304,6 +304,8 @@ fn settings_contain_common_config(app_type: &AppType, settings: &Value, snippet:
         },
         AppType::GrokBuild
         | AppType::OpenCode
+        | AppType::CopilotByok
+        | AppType::CopilotCli
         | AppType::OpenClaw
         | AppType::Hermes
         | AppType::Pi
@@ -384,6 +386,8 @@ pub(crate) fn remove_common_config_from_settings(
         }
         AppType::GrokBuild
         | AppType::OpenCode
+        | AppType::CopilotByok
+        | AppType::CopilotCli
         | AppType::OpenClaw
         | AppType::Hermes
         | AppType::Pi
@@ -661,6 +665,13 @@ pub(crate) fn write_live_snapshot(app_type: &AppType, provider: &Provider) -> Re
                 }
             }
         }
+        AppType::CopilotByok | AppType::CopilotCli => {
+            return Err(AppError::localized(
+                "copilot.live.use_catalog",
+                "VS Code Copilot 配置必须通过供应商目录同步",
+                "VS Code Copilot configuration must be synced through its provider catalog",
+            ));
+        }
         AppType::OpenClaw => {
             // OpenClaw uses additive mode - write provider to config
             use crate::openclaw_config;
@@ -773,7 +784,11 @@ pub(crate) fn sync_additive_app_to_live(
     state: &AppState,
     app_type: &AppType,
 ) -> Result<(), AppError> {
-    sync_all_providers_to_live(state, app_type)?;
+    if matches!(app_type, AppType::CopilotByok) {
+        crate::copilot_byok::sync(state.db.as_ref())?;
+    } else {
+        sync_all_providers_to_live(state, app_type)?;
+    }
 
     // 本函数语义是"把这个应用同步到 live"，MCP 重投影也只针对该应用；
     // 全量 sync_all_enabled 会把无关应用的 live 损坏牵连进来。投影失败
@@ -896,7 +911,9 @@ pub fn sync_current_to_live(state: &AppState) -> Result<(), AppError> {
         ) {
             continue;
         }
-        let result = if app_type.is_additive_mode() {
+        let result = if matches!(app_type, AppType::CopilotByok) {
+            crate::copilot_byok::sync_if_configured(state.db.as_ref())
+        } else if app_type.is_additive_mode() {
             // Additive mode: sync ALL providers
             sync_all_providers_to_live(state, &app_type)
         } else {
@@ -1020,6 +1037,11 @@ pub fn read_live_settings(app_type: AppType) -> Result<Value, AppError> {
             Ok(config)
         }
         AppType::GrokBuild => crate::grok_config::read_grok_live_settings(),
+        AppType::CopilotByok | AppType::CopilotCli => Err(AppError::localized(
+            "copilot.live.use_import",
+            "请使用 VS Code Copilot 的“导入当前配置”功能",
+            "Use Import Current Configuration in VS Code Copilot",
+        )),
         AppType::OpenClaw => {
             use crate::openclaw_config::{get_openclaw_config_path, read_openclaw_config};
 
@@ -1068,6 +1090,9 @@ pub fn read_live_settings(app_type: AppType) -> Result<Value, AppError> {
 /// Returns `Ok(true)` if a provider was actually imported,
 /// `Ok(false)` if skipped (providers already exist for this app).
 pub fn import_default_config(state: &AppState, app_type: AppType) -> Result<bool, AppError> {
+    if matches!(app_type, AppType::CopilotByok) {
+        return Ok(false);
+    }
     // Additive mode apps (OpenCode, OpenClaw) should use their dedicated
     // import_xxx_providers_from_live functions, not this generic default config import
     if app_type.is_additive_mode() {
@@ -1184,6 +1209,13 @@ pub fn import_default_config(state: &AppState, app_type: AppType) -> Result<bool
         | AppType::Omp => {
             unreachable!("additive mode apps are handled by early return")
         }
+        AppType::CopilotByok | AppType::CopilotCli => {
+            return Err(AppError::localized(
+                "copilot.live.use_import",
+                "请使用 VS Code Copilot 的“导入当前配置”功能",
+                "Use Import Current Configuration in VS Code Copilot",
+            ));
+        }
     };
 
     let mut provider = Provider::with_id(
@@ -1254,7 +1286,7 @@ pub fn should_import_default_config_on_startup(
     state: &AppState,
     app_type: &AppType,
 ) -> Result<bool, AppError> {
-    if app_type.is_additive_mode() {
+    if app_type.is_additive_mode() || matches!(app_type, AppType::CopilotByok) {
         return Ok(false);
     }
 

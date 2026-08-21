@@ -107,17 +107,26 @@ const SOURCE_LABEL: Record<string, string> = {
   pip: "pip",
 };
 
-type Row = { kind: "tool"; tool: ToolName } | { kind: "desktop" };
+type Row =
+  | { kind: "tool"; tool: ToolName }
+  | { kind: "desktop" }
+  | { kind: "copilot"; app: "copilot-byok" | "copilot-cli" };
 
 const ROW_BY_APP = Object.fromEntries([
   ["claude-desktop", { kind: "desktop" }],
+  ["copilot-byok", { kind: "copilot", app: "copilot-byok" }],
+  ["copilot-cli", { kind: "copilot", app: "copilot-cli" }],
   ...TOOL_NAMES.map((tool) => [TOOL_APP_IDS[tool], { kind: "tool", tool }]),
 ]) as Record<AppId, Row>;
 
 type RowSection = { key: string; title: string; rows: Row[] };
 
 const rowKey = (row: Row): AppId =>
-  row.kind === "desktop" ? "claude-desktop" : TOOL_APP_IDS[row.tool];
+  row.kind === "desktop"
+    ? "claude-desktop"
+    : row.kind === "copilot"
+      ? row.app
+      : TOOL_APP_IDS[row.tool];
 
 // 只上下拖，且停在本组的列表框里：列表框裁掉超出的部分，拖出去整行会看不见
 const verticalDragModifiers: Modifier[] = [
@@ -186,6 +195,7 @@ export function AppsPage() {
   // 按「已安装 / 未安装」分两组。Claude Desktop 没有命令可探，用后端按数据目录 / 应用包推断的结果。
   // 首次探测还没出结果时不分组，免得各行探完一个跳一个；之后重新检查时沿用上次结果，位置不动。
   const rowInstalled = (row: Row): boolean | null => {
+    if (row.kind === "copilot") return null;
     if (row.kind === "desktop") {
       return isDesktopStatusPending ? null : Boolean(desktopStatus?.installed);
     }
@@ -196,10 +206,12 @@ export function AppsPage() {
   // 两组共用一份顺序（拖动后写进设置，侧栏也按它排），每组只是按装没装过滤
   const appOrder = orderAppIds(settings?.appOrder);
   const orderedRows = appOrder.map((app) => ROW_BY_APP[app]);
-  const rowStates = orderedRows.map((row) => ({
-    row,
-    installed: rowInstalled(row),
-  }));
+  const rowStates = orderedRows
+    .filter((row) => row.kind !== "copilot")
+    .map((row) => ({
+      row,
+      installed: rowInstalled(row),
+    }));
   const sections: RowSection[] = rowStates.some((s) => s.installed === null)
     ? [{ key: "all", title: t("appsPage.columnApp"), rows: orderedRows }]
     : (
@@ -224,6 +236,15 @@ export function AppsPage() {
           };
         })
         .filter((section) => section.rows.length > 0);
+  // Copilot rows manage integrations, not installable packages: don't infer an
+  // installed state from catalog configuration or the sidebar visibility flag.
+  if (!rowStates.some((s) => s.installed === null)) {
+    sections.push({
+      key: "copilot",
+      title: `${APP_DISPLAY_NAME["copilot-byok"]} / ${APP_DISPLAY_NAME["copilot-cli"]}`,
+      rows: orderedRows.filter((row) => row.kind === "copilot"),
+    });
+  }
   // 行换组会重新挂载，操作列的量宽要跟着重新观察新节点
   const sectionLayoutKey = sections
     .map((section) => `${section.key}:${section.rows.map(rowKey).join(",")}`)
@@ -356,6 +377,13 @@ export function AppsPage() {
           </span>
         }
         visibility={visibilitySwitch("claude-desktop")}
+      />
+    ) : row.kind === "copilot" ? (
+      <AppRow
+        key={row.app}
+        app={row.app}
+        name={APP_DISPLAY_NAME[row.app]}
+        visibility={visibilitySwitch(row.app)}
       />
     ) : (
       <ToolRow

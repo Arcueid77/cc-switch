@@ -7,3 +7,9 @@ export { FullUrlToggle } from "./FullUrlToggle";
 export { GptContextWindowHint } from "./GptContextWindowHint";
 export type { DirectModeFormatNotice } from "./DirectModeFormatWarning";
 export { NativeConfigEditor } from "./NativeConfigEditor";
+export { ProviderFormLayout } from "./ProviderFormLayout";
+export { ProviderIdentityFields } from "./ProviderIdentityFields";
+export {
+  ProviderHeadersEditor,
+  PROVIDER_HEADER_DRAFT_PREFIX,
+} from "./ProviderHeadersEditor";

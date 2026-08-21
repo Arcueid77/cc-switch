@@ -16,6 +16,8 @@ const SESSION_PROVIDER_APPS: Record<string, AppId> = {
   "MiniMax Code (Session)": "mcode",
   "Kimi Code (Session)": "kimi",
   "Pi (Session)": "pi",
+  "VS Code Copilot (Session)": "copilot-byok",
+  "Copilot CLI (Session)": "copilot-cli",
   "Oh My Pi (Session)": "omp",
   "Antigravity (Session)": "agy",
   "DeepSeek Harness (Session)": "dsh",

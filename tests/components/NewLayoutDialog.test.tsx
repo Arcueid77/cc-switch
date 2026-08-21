@@ -107,6 +107,8 @@ describe("NewLayoutDialog", () => {
     await waitFor(() =>
       expect(mocks.getAll).toHaveBeenCalledTimes(APP_IDS.length),
     );
+    expect(mocks.getAll).toHaveBeenCalledWith("copilot-byok");
+    expect(mocks.getAll).toHaveBeenCalledWith("copilot-cli");
     expect(screen.queryByText("newLayoutNotice.title")).not.toBeInTheDocument();
   });
 
