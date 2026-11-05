@@ -8,6 +8,14 @@ use crate::services::skill::SkillStore;
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub struct McpApps {
     #[serde(default)]
+    pub mcode: bool,
+    #[serde(default)]
+    pub kimi: bool,
+    #[serde(default)]
+    pub dsh: bool,
+    #[serde(default)]
+    pub agy: bool,
+    #[serde(default)]
     pub claude: bool,
     #[serde(default)]
     pub codex: bool,
@@ -17,8 +25,21 @@ pub struct McpApps {
     pub grokbuild: bool,
     #[serde(default)]
     pub opencode: bool,
+    #[serde(
+        rename = "copilot-byok",
+        alias = "copilotByok",
+        alias = "vscode-copilot",
+        default
+    )]
+    pub copilot_byok: bool,
+    #[serde(rename = "copilot-cli", alias = "copilotCli", default)]
+    pub copilot_cli: bool,
     #[serde(default)]
     pub hermes: bool,
+    #[serde(default)]
+    pub pi: bool,
+    #[serde(default)]
+    pub omp: bool,
 }
 
 impl McpApps {
@@ -30,10 +51,17 @@ impl McpApps {
             AppType::Gemini => self.gemini,
             AppType::GrokBuild => self.grokbuild,
             AppType::OpenCode => self.opencode,
+            AppType::CopilotByok => self.copilot_byok,
+            AppType::CopilotCli => self.copilot_cli,
             AppType::OpenClaw => false, // OpenClaw doesn't support MCP
             AppType::Hermes => self.hermes,
-            AppType::Pi => false, // Pi core has no native MCP registry.
+            AppType::Mcode => self.mcode,
+            AppType::Kimi => self.kimi,
+            AppType::Dsh => self.dsh,
+            AppType::Pi => self.pi,
+            AppType::Omp => self.omp,
             AppType::ClaudeDesktop => false,
+            AppType::Agy => self.agy,
         }
     }
 
@@ -45,10 +73,17 @@ impl McpApps {
             AppType::Gemini => self.gemini = enabled,
             AppType::GrokBuild => self.grokbuild = enabled,
             AppType::OpenCode => self.opencode = enabled,
+            AppType::CopilotByok => self.copilot_byok = enabled,
+            AppType::CopilotCli => self.copilot_cli = enabled,
             AppType::OpenClaw => {} // OpenClaw doesn't support MCP, ignore
             AppType::Hermes => self.hermes = enabled,
-            AppType::Pi => {}            // Pi core has no native MCP registry.
-            AppType::ClaudeDesktop => {} // Claude Desktop 3P provider config doesn't support MCP here
+            AppType::Mcode => self.mcode = enabled,
+            AppType::Kimi => self.kimi = enabled,
+            AppType::Dsh => self.dsh = enabled,
+            AppType::Pi => self.pi = enabled,
+            AppType::ClaudeDesktop => {}
+            AppType::Agy => self.agy = enabled,
+            AppType::Omp => self.omp = enabled,
         }
     }
 
@@ -70,8 +105,32 @@ impl McpApps {
         if self.opencode {
             apps.push(AppType::OpenCode);
         }
+        if self.agy {
+            apps.push(AppType::Agy);
+        }
+        if self.dsh {
+            apps.push(AppType::Dsh);
+        }
+        if self.kimi {
+            apps.push(AppType::Kimi);
+        }
+        if self.mcode {
+            apps.push(AppType::Mcode);
+        }
+        if self.copilot_byok {
+            apps.push(AppType::CopilotByok);
+        }
+        if self.copilot_cli {
+            apps.push(AppType::CopilotCli);
+        }
         if self.hermes {
             apps.push(AppType::Hermes);
+        }
+        if self.pi {
+            apps.push(AppType::Pi);
+        }
+        if self.omp {
+            apps.push(AppType::Omp);
         }
         apps
     }
@@ -83,13 +142,29 @@ impl McpApps {
             && !self.gemini
             && !self.grokbuild
             && !self.opencode
+            && !self.copilot_byok
+            && !self.copilot_cli
             && !self.hermes
+            && !self.agy
+            && !self.kimi
+            && !self.dsh
+            && !self.mcode
+            && !self.pi
+            && !self.omp
     }
 }
 
 /// Skill 应用启用状态（标记 Skill 应用到哪些客户端）
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub struct SkillApps {
+    #[serde(default)]
+    pub mcode: bool,
+    #[serde(default)]
+    pub kimi: bool,
+    #[serde(default)]
+    pub dsh: bool,
+    #[serde(default)]
+    pub agy: bool,
     #[serde(default)]
     pub claude: bool,
     #[serde(default)]
@@ -100,10 +175,21 @@ pub struct SkillApps {
     pub grokbuild: bool,
     #[serde(default)]
     pub opencode: bool,
+    #[serde(
+        rename = "copilot-byok",
+        alias = "copilotByok",
+        alias = "vscode-copilot",
+        default
+    )]
+    pub copilot_byok: bool,
+    #[serde(rename = "copilot-cli", alias = "copilotCli", default)]
+    pub copilot_cli: bool,
     #[serde(default)]
     pub hermes: bool,
     #[serde(default)]
     pub pi: bool,
+    #[serde(default)]
+    pub omp: bool,
 }
 
 impl SkillApps {
@@ -115,9 +201,16 @@ impl SkillApps {
             AppType::Gemini => self.gemini,
             AppType::GrokBuild => self.grokbuild,
             AppType::OpenCode => self.opencode,
+            AppType::CopilotByok => self.copilot_byok,
+            AppType::CopilotCli => self.copilot_cli,
             AppType::Hermes => self.hermes,
             AppType::Pi => self.pi,
-            AppType::OpenClaw => false, // OpenClaw doesn't support Skills
+            AppType::Mcode => self.mcode,
+            AppType::Kimi => self.kimi,
+            AppType::Dsh => self.dsh,
+            AppType::OpenClaw => false,
+            AppType::Agy => self.agy,
+            AppType::Omp => self.omp,
             AppType::ClaudeDesktop => false,
         }
     }
@@ -130,9 +223,16 @@ impl SkillApps {
             AppType::Gemini => self.gemini = enabled,
             AppType::GrokBuild => self.grokbuild = enabled,
             AppType::OpenCode => self.opencode = enabled,
+            AppType::CopilotByok => self.copilot_byok = enabled,
+            AppType::CopilotCli => self.copilot_cli = enabled,
             AppType::Hermes => self.hermes = enabled,
             AppType::Pi => self.pi = enabled,
-            AppType::OpenClaw => {} // OpenClaw doesn't support Skills, ignore
+            AppType::Mcode => self.mcode = enabled,
+            AppType::Kimi => self.kimi = enabled,
+            AppType::Dsh => self.dsh = enabled,
+            AppType::OpenClaw => {}
+            AppType::Agy => self.agy = enabled,
+            AppType::Omp => self.omp = enabled,
             AppType::ClaudeDesktop => {} // Claude Desktop 3P profiles don't use CC Switch skill sync
         }
     }
@@ -155,11 +255,32 @@ impl SkillApps {
         if self.opencode {
             apps.push(AppType::OpenCode);
         }
+        if self.agy {
+            apps.push(AppType::Agy);
+        }
+        if self.dsh {
+            apps.push(AppType::Dsh);
+        }
+        if self.kimi {
+            apps.push(AppType::Kimi);
+        }
+        if self.mcode {
+            apps.push(AppType::Mcode);
+        }
+        if self.copilot_byok {
+            apps.push(AppType::CopilotByok);
+        }
+        if self.copilot_cli {
+            apps.push(AppType::CopilotCli);
+        }
         if self.hermes {
             apps.push(AppType::Hermes);
         }
         if self.pi {
             apps.push(AppType::Pi);
+        }
+        if self.omp {
+            apps.push(AppType::Omp);
         }
         apps
     }
@@ -171,8 +292,15 @@ impl SkillApps {
             && !self.gemini
             && !self.grokbuild
             && !self.opencode
+            && !self.copilot_byok
+            && !self.copilot_cli
             && !self.hermes
+            && !self.agy
+            && !self.kimi
+            && !self.dsh
+            && !self.mcode
             && !self.pi
+            && !self.omp
     }
 
     /// 仅启用指定应用（其他应用设为禁用）
@@ -310,6 +438,21 @@ pub struct McpRoot {
     /// OpenCode MCP 配置（v4.0.0+，实际使用 opencode.json）
     #[serde(default, skip_serializing_if = "McpConfig::is_empty")]
     pub opencode: McpConfig,
+    #[serde(
+        rename = "copilot-byok",
+        alias = "copilotByok",
+        alias = "vscode-copilot",
+        default,
+        skip_serializing_if = "McpConfig::is_empty"
+    )]
+    pub copilot_byok: McpConfig,
+    #[serde(
+        rename = "copilot-cli",
+        alias = "copilotCli",
+        default,
+        skip_serializing_if = "McpConfig::is_empty"
+    )]
+    pub copilot_cli: McpConfig,
     /// OpenClaw MCP 配置（v4.1.0+，实际使用 openclaw.json）
     #[serde(default, skip_serializing_if = "McpConfig::is_empty")]
     pub openclaw: McpConfig,
@@ -330,6 +473,8 @@ impl Default for McpRoot {
             gemini: McpConfig::default(),
             grokbuild: McpConfig::default(),
             opencode: McpConfig::default(),
+            copilot_byok: McpConfig::default(),
+            copilot_cli: McpConfig::default(),
             openclaw: McpConfig::default(),
             hermes: McpConfig::default(),
         }
@@ -363,6 +508,15 @@ pub struct PromptRoot {
     pub grokbuild: PromptConfig,
     #[serde(default)]
     pub opencode: PromptConfig,
+    #[serde(
+        rename = "copilot-byok",
+        alias = "copilotByok",
+        alias = "vscode-copilot",
+        default
+    )]
+    pub copilot_byok: PromptConfig,
+    #[serde(rename = "copilot-cli", alias = "copilotCli", default)]
+    pub copilot_cli: PromptConfig,
     #[serde(default)]
     pub openclaw: PromptConfig,
     #[serde(default)]
@@ -389,9 +543,22 @@ pub enum AppType {
     Gemini,
     GrokBuild,
     OpenCode,
+    #[serde(
+        rename = "copilot-byok",
+        alias = "copilotByok",
+        alias = "vscode-copilot"
+    )]
+    CopilotByok,
+    #[serde(rename = "copilot-cli", alias = "copilot_cli", alias = "copilotCli")]
+    CopilotCli,
     OpenClaw,
     Hermes,
     Pi,
+    Mcode,
+    Kimi,
+    Dsh,
+    Agy,
+    Omp,
 }
 
 impl AppType {
@@ -403,9 +570,16 @@ impl AppType {
             AppType::Gemini => "gemini",
             AppType::GrokBuild => "grokbuild",
             AppType::OpenCode => "opencode",
+            AppType::CopilotByok => "copilot-byok",
+            AppType::CopilotCli => "copilot-cli",
             AppType::OpenClaw => "openclaw",
             AppType::Hermes => "hermes",
             AppType::Pi => "pi",
+            AppType::Mcode => "mcode",
+            AppType::Kimi => "kimi",
+            AppType::Dsh => "dsh",
+            AppType::Agy => "agy",
+            AppType::Omp => "omp",
         }
     }
 
@@ -417,7 +591,14 @@ impl AppType {
     pub fn is_additive_mode(&self) -> bool {
         matches!(
             self,
-            AppType::OpenCode | AppType::OpenClaw | AppType::Hermes | AppType::Pi
+            AppType::OpenCode
+                | AppType::OpenClaw
+                | AppType::Hermes
+                | AppType::Pi
+                | AppType::Mcode
+                | AppType::Kimi
+                | AppType::Dsh
+                | AppType::Omp
         )
     }
 
@@ -426,6 +607,13 @@ impl AppType {
             self,
             AppType::Claude | AppType::Codex | AppType::Gemini | AppType::GrokBuild
         )
+    }
+
+    /// 有设备级的直连 / 路由模式（`live-state.json`，`mode::controller`）：本地路由的四个应用，
+    /// 加上 Claude Desktop。Desktop 经同一个路由服务转发，但没有 `proxy_config` 行、不做故障
+    /// 转移，所以不算 [`Self::supports_local_proxy`]。
+    pub fn has_route_mode(&self) -> bool {
+        self.supports_local_proxy() || matches!(self, AppType::ClaudeDesktop)
     }
 
     /// Return an iterator over all app types
@@ -437,9 +625,16 @@ impl AppType {
             AppType::Gemini,
             AppType::GrokBuild,
             AppType::OpenCode,
+            AppType::CopilotByok,
+            AppType::CopilotCli,
             AppType::OpenClaw,
             AppType::Hermes,
             AppType::Pi,
+            AppType::Mcode,
+            AppType::Kimi,
+            AppType::Dsh,
+            AppType::Agy,
+            AppType::Omp,
         ]
         .into_iter()
     }
@@ -457,13 +652,22 @@ impl FromStr for AppType {
             "gemini" => Ok(AppType::Gemini),
             "grokbuild" | "grok-build" | "grok_build" | "grok" => Ok(AppType::GrokBuild),
             "opencode" => Ok(AppType::OpenCode),
+            "copilot-byok" | "copilot_byok" | "copilotbyok" | "vscode-copilot" => {
+                Ok(AppType::CopilotByok)
+            }
+            "copilot-cli" | "copilot_cli" | "copilotcli" => Ok(AppType::CopilotCli),
             "openclaw" => Ok(AppType::OpenClaw),
             "hermes" => Ok(AppType::Hermes),
             "pi" => Ok(AppType::Pi),
+            "mcode" => Ok(AppType::Mcode),
+            "kimi" | "kimi-code" => Ok(AppType::Kimi),
+            "dsh" | "deepseek-harness" => Ok(AppType::Dsh),
+            "agy" | "antigravity" | "antigravity-cli" => Ok(AppType::Agy),
+            "omp" | "oh-my-pi" | "oh_my_pi" | "ohmypi" => Ok(AppType::Omp),
             other => Err(AppError::localized(
                 "unsupported_app",
-                format!("不支持的应用标识: '{other}'。可选值: claude, claude-desktop, codex, gemini, grokbuild, opencode, openclaw, hermes, pi。"),
-                format!("Unsupported app id: '{other}'. Allowed: claude, claude-desktop, codex, gemini, grokbuild, opencode, openclaw, hermes, pi."),
+                format!("不支持的应用标识: '{other}'。可选值: claude, claude-desktop, codex, gemini, grokbuild, opencode, copilot-byok, copilot-cli, openclaw, hermes, pi, mcode, kimi, dsh, agy, omp。"),
+                format!("Unsupported app id: '{other}'. Allowed: claude, claude-desktop, codex, gemini, grokbuild, opencode, copilot-byok, copilot-cli, openclaw, hermes, pi, mcode, kimi, dsh, agy, omp."),
             )),
         }
     }
@@ -501,9 +705,16 @@ impl CommonConfigSnippets {
             AppType::Gemini => self.gemini.as_ref(),
             AppType::GrokBuild => None,
             AppType::OpenCode => self.opencode.as_ref(),
+            AppType::CopilotByok => None,
+            AppType::CopilotCli => None,
             AppType::OpenClaw => self.openclaw.as_ref(),
             AppType::Hermes => self.hermes.as_ref(),
-            AppType::Pi => None,
+            AppType::Pi
+            | AppType::Mcode
+            | AppType::Kimi
+            | AppType::Dsh
+            | AppType::Omp
+            | AppType::Agy => None,
         }
     }
 
@@ -516,9 +727,16 @@ impl CommonConfigSnippets {
             AppType::Gemini => self.gemini = snippet,
             AppType::GrokBuild => {}
             AppType::OpenCode => self.opencode = snippet,
+            AppType::CopilotByok => {}
+            AppType::CopilotCli => {}
             AppType::OpenClaw => self.openclaw = snippet,
             AppType::Hermes => self.hermes = snippet,
-            AppType::Pi => {}
+            AppType::Pi
+            | AppType::Mcode
+            | AppType::Kimi
+            | AppType::Dsh
+            | AppType::Omp
+            | AppType::Agy => {}
         }
     }
 }
@@ -563,6 +781,7 @@ impl Default for MultiAppConfig {
         apps.insert("opencode".to_string(), ProviderManager::default());
         apps.insert("openclaw".to_string(), ProviderManager::default());
         apps.insert("hermes".to_string(), ProviderManager::default());
+        apps.insert("agy".to_string(), ProviderManager::default());
 
         Self {
             version: 2,
@@ -840,11 +1059,18 @@ impl MultiAppConfig {
             AppType::Gemini => &mut config.prompts.gemini.prompts,
             AppType::GrokBuild => &mut config.prompts.grokbuild.prompts,
             AppType::OpenCode => &mut config.prompts.opencode.prompts,
+            AppType::CopilotByok => &mut config.prompts.copilot_byok.prompts,
+            AppType::CopilotCli => &mut config.prompts.copilot_cli.prompts,
             AppType::OpenClaw => &mut config.prompts.openclaw.prompts,
             AppType::Hermes => &mut config.prompts.hermes.prompts,
             // Pi was added after prompts moved to SQLite. Keeping it out of
             // this legacy config avoids a second, unused prompt state.
-            AppType::Pi => return Ok(false),
+            AppType::Pi
+            | AppType::Mcode
+            | AppType::Kimi
+            | AppType::Dsh
+            | AppType::Omp
+            | AppType::Agy => return Ok(false),
         };
 
         prompts.insert(id, prompt);
@@ -886,9 +1112,16 @@ impl MultiAppConfig {
                 AppType::Gemini => &self.mcp.gemini.servers,
                 AppType::GrokBuild => continue,
                 AppType::OpenCode => &self.mcp.opencode.servers,
+                AppType::CopilotByok => continue,
+                AppType::CopilotCli => continue,
                 AppType::OpenClaw => continue, // OpenClaw MCP is still in development, skip
                 AppType::Hermes => continue,   // Hermes didn't exist in v3.6.x, skip
-                AppType::Pi => continue,       // Pi didn't exist in v3.6.x, skip
+                AppType::Pi
+                | AppType::Mcode
+                | AppType::Kimi
+                | AppType::Dsh
+                | AppType::Omp
+                | AppType::Agy => continue, // Pi didn't exist in v3.6.x, skip
             };
 
             for (id, entry) in old_servers {
@@ -1019,6 +1252,16 @@ mod tests {
             AppType::ClaudeDesktop
         );
         assert_eq!(AppType::ClaudeDesktop.as_str(), "claude-desktop");
+    }
+
+    #[test]
+    fn app_type_parses_omp_aliases() {
+        assert_eq!("omp".parse::<AppType>().unwrap(), AppType::Omp);
+        assert_eq!("oh-my-pi".parse::<AppType>().unwrap(), AppType::Omp);
+        assert_eq!("oh_my_pi".parse::<AppType>().unwrap(), AppType::Omp);
+        assert_eq!("ohmypi".parse::<AppType>().unwrap(), AppType::Omp);
+        assert_eq!("OMP".parse::<AppType>().unwrap(), AppType::Omp);
+        assert_eq!(AppType::Omp.as_str(), "omp");
     }
 
     struct TempHome {

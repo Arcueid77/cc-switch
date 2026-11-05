@@ -14,6 +14,8 @@ globalThis.Request = CrossFetchRequest as typeof Request;
 globalThis.Response = CrossFetchResponse as typeof Response;
 
 vi.mock("@tauri-apps/api/core", () => ({
+  // 测试环境不在 Tauri 里：组件用它判断要不要发真实请求（如自动取汇率）
+  isTauri: () => false,
   invoke: async (command: string, payload: Record<string, unknown> = {}) => {
     const response = await fetch(`${TAURI_ENDPOINT}/${command}`, {
       method: "POST",
@@ -64,6 +66,22 @@ vi.mock("@tauri-apps/api/event", () => ({
     };
   },
 }));
+
+vi.mock("@tauri-apps/api/window", () => {
+  const currentWindow = {
+    close: vi.fn(async () => undefined),
+    isMaximized: vi.fn(async () => false),
+    minimize: vi.fn(async () => undefined),
+    onFocusChanged: vi.fn(async () => vi.fn()),
+    onResized: vi.fn(async () => vi.fn()),
+    setDecorations: vi.fn(async () => undefined),
+    toggleMaximize: vi.fn(async () => undefined),
+  };
+
+  return {
+    getCurrentWindow: () => currentWindow,
+  };
+});
 
 // Ensure the MSW server is referenced so tree shaking doesn't remove imports
 void server;

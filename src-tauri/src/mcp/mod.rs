@@ -10,14 +10,20 @@
 //! - `gemini` - Gemini MCP 同步和导入
 //! - `opencode` - OpenCode MCP 同步和导入（含 local/remote 格式转换）
 //! - `hermes` - Hermes MCP 同步和导入
+//! - `omp` - Omp MCP 同步和导入
 
+pub mod agy;
 mod claude;
 mod codex;
+mod copilot;
+mod copilot_cli;
+pub(crate) mod dsh;
 mod gemini;
 mod grokbuild;
 mod hermes;
+pub(crate) mod omp;
 mod opencode;
-mod validation;
+pub(crate) mod validation;
 
 // 重新导出公共 API
 pub use claude::{
@@ -27,6 +33,11 @@ pub use claude::{
 pub use codex::{
     import_from_codex, remove_server_from_codex, sync_enabled_to_codex, sync_single_server_to_codex,
 };
+pub(crate) use copilot::plan_copilot_projection;
+pub use copilot::{import_from_copilot, remove_server_from_copilot, sync_single_server_to_copilot};
+pub use copilot_cli::{
+    import_from_copilot_cli, remove_server_from_copilot_cli, sync_single_server_to_copilot_cli,
+};
 pub use gemini::{
     import_from_gemini, remove_server_from_gemini, sync_enabled_to_gemini,
     sync_single_server_to_gemini,
@@ -35,6 +46,11 @@ pub use grokbuild::{
     import_from_grokbuild, remove_server_from_grokbuild, sync_single_server_to_grokbuild,
 };
 pub use hermes::{import_from_hermes, remove_server_from_hermes, sync_single_server_to_hermes};
+pub use omp::{remove_server_from_omp, sync_single_server_to_omp};
 pub use opencode::{
     import_from_opencode, remove_server_from_opencode, sync_single_server_to_opencode,
 };
+
+pub(crate) mod kimi;
+pub(crate) mod mcode;
+pub(crate) mod pi;
